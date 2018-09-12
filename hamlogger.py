@@ -123,10 +123,17 @@ def get_mode():
 
 
 def get_freq():
-    """ Get the frequency"""
+    """Get the frequency"""
 
     freq = input("Frequency: ")
     return freq
+
+
+def get_band():
+    """Get the Band"""
+
+    band = input("Band: ")
+    return band
 
 
 def get_tx_rst():
@@ -159,6 +166,7 @@ def print_entry(entry):
               "\n"
               "Mode: {mode}\n"
               "Frequency: {freq}\n"
+              "Band: {band}\n"
               "TX (RST): {tx_rst}\n"
               "RX (RST): {rx_rst}\n"
               "\n"
@@ -180,7 +188,7 @@ def print_history(db, entry):
         # end_time = contact.end_time
         # mode = contact.mode
         # output = "{} {} {}".format(end_date, end_time, mode)
-        output = "{end_date} {end_time} {mode}".format(**contact._asdict())
+        output = "{end_date} {end_time} {mode} {band}".format(**contact._asdict())
         print(output)
 
 
@@ -190,12 +198,14 @@ def get_stats(db, entry):
     callsign = entry['callsign']
     contacts = db[callsign]
 
-    Contact = namedtuple("Contact", ["end_date", "end_time", "mode"])
+    Contact = namedtuple("Contact", ["end_date", "end_time", "mode", "band"])
 
     modes = []
     for contact in contacts:
-        modes.append(Contact(contact['end_date'], contact['end_time'],
-                     contact['mode']))
+        modes.append(Contact(contact.get('end_date'),
+                             contact.get('end_time'),
+                             contact.get('mode'),
+                             contact.get('band', '')))
 
     # last_contact = contacts[-1]
     # last_date = last_contact['end_date']
@@ -217,6 +227,7 @@ def print_db_entry(entry):
               "\n"
               "Mode: {mode}\n"
               "Frequency: {freq}\n"
+              "Band: {band}\n"
               "TX (RST): {tx_rst}\n"
               "RX (RST): {rx_rst}\n"
               "\n")
@@ -295,6 +306,11 @@ def main():
             freq = get_freq()
             entry['freq'] = freq
             default_entry['freq'] = freq
+
+        if c == 'b':
+            band = get_band()
+            entry['band'] = band
+            default_entry['band'] = band
 
         if c == 't':
             tx_rst = get_tx_rst()
