@@ -167,6 +167,43 @@ def print_entry(entry):
     print(output.format(**entry))
 
 
+def print_history(db, entry):
+    """Print out the contact history"""
+
+    if entry['callsign'] is '':
+        return
+
+    history = get_stats(db, entry)
+
+    for contact in history:
+        # end_date = contact.end_date
+        # end_time = contact.end_time
+        # mode = contact.mode
+        # output = "{} {} {}".format(end_date, end_time, mode)
+        output = "{end_date} {end_time} {mode}".format(**contact._asdict())
+        print(output)
+
+
+def get_stats(db, entry):
+    """Print out contact stats"""
+
+    callsign = entry['callsign']
+    contacts = db[callsign]
+
+    Contact = namedtuple("Contact", ["end_date", "end_time", "mode"])
+
+    modes = []
+    for contact in contacts:
+        modes.append(Contact(contact['end_date'], contact['end_time'],
+                     contact['mode']))
+
+    # last_contact = contacts[-1]
+    # last_date = last_contact['end_date']
+    # last_time = last_contact['end_time']
+
+    return modes
+
+
 def print_db_entry(entry):
     """Print an entry out of the database"""
 
@@ -207,6 +244,7 @@ def main_menu():
         "-----------------------------------------------------------\n"
         "(c)allsign, (n)ame, qt(h), (s)tart time, (e)nd time        \n"
         "(m)ode, (f)req, (t)x rst, (r)x rst, sa(v)e entry, (q)uit   \n"
+        "(p)rint database, reset(x) entry                           \n"
         "-----------------------------------------------------------\n"
     )
     print(output)
@@ -275,6 +313,9 @@ def main():
 
         if c == 'p':
             print_database(db)
+
+        if c == 'P':
+            print_history(db, entry)
 
         if c == 'l':
             lookup(entry)
