@@ -183,35 +183,42 @@ def print_history(db, entry):
 
     history = get_stats(db, entry)
 
-    for contact in history:
-        # end_date = contact.end_date
-        # end_time = contact.end_time
-        # mode = contact.mode
-        # output = "{} {} {}".format(end_date, end_time, mode)
-        output = "{end_date} {end_time} {mode} {band}".format(**contact._asdict())
+    if history is None:
+        print("No logged contacts\n")
+        input("Press enter to continue")
+        return
+
+    for i, contact in enumerate(history):
+        output = "{end_date: <15} {end_time: <15} {mode: <15} {band: <15}"
+        output = output.format(**contact._asdict())
+        if i % 10 == 20:
+            input("Press enter to continue")
         print(output)
+
+    print("")
+    input("Press enter to continue")
 
 
 def get_stats(db, entry):
     """Print out contact stats"""
 
     callsign = entry['callsign']
-    contacts = db[callsign]
 
     Contact = namedtuple("Contact", ["end_date", "end_time", "mode", "band"])
+    history = []
 
-    modes = []
+    if callsign not in db:
+        return None
+
+    contacts = db[callsign]
+
     for contact in contacts:
-        modes.append(Contact(contact.get('end_date'),
-                             contact.get('end_time'),
-                             contact.get('mode'),
-                             contact.get('band', '')))
+        history.append(Contact(contact.get('end_date'),
+                               contact.get('end_time'),
+                               contact.get('mode'),
+                               contact.get('band', '')))
 
-    # last_contact = contacts[-1]
-    # last_date = last_contact['end_date']
-    # last_time = last_contact['end_time']
-
-    return modes
+    return history
 
 
 def print_db_entry(entry):
