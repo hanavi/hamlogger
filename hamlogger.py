@@ -196,7 +196,7 @@ def print_history(db, entry):
     for i, contact in enumerate(history):
         output = "{end_date: <15} {end_time: <15} {mode: <15} {band: <15}"
         output = output.format(**contact._asdict())
-        if i % 10 == 20:
+        if i % 20 == 0:
             input("Press enter to continue")
         print(output)
 
