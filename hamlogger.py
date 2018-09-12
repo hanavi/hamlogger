@@ -9,6 +9,7 @@ import tty
 import termios
 from collections import defaultdict, namedtuple
 import os
+import platform
 
 
 logging.basicConfig(level=logging.WARNING)
@@ -57,7 +58,11 @@ def lookup(entry):
 
     callsign = entry['callsign']
     url = "https://www.qrz.com/db/{}".format(callsign)
-    os.system("open {}".format(url))
+
+    if platform.system() == "Darwin":
+        os.system("open {}".format(url))
+    elif platform.system() == "Linux":
+        os.system("firefox {}".format(url))
 
 
 def add_log_entry(db, entry):
