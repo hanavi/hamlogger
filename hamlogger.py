@@ -8,6 +8,7 @@ import sys
 import tty
 import termios
 from collections import defaultdict, namedtuple
+import os
 
 
 logging.basicConfig(level=logging.WARNING)
@@ -30,13 +31,14 @@ def get_char():
 def load_ham_log(fname='db.json'):
     """Load ham radio log entries"""
 
-    # TODO: error checking
-    # json for now...
-
     fname = "db.json"
-    with open(fname) as fd:
-        data = fd.read()
-    db = json.loads(data)
+    try:
+        with open(fname) as fd:
+            data = fd.read()
+        db = json.loads(data)
+    except FileNotFoundError:
+        db = {}
+
     return db
 
 
@@ -48,6 +50,14 @@ def save_ham_log(db, fname='db.json'):
 
     with open(fname, 'w') as fd:
         fd.write(json.dumps(db))
+
+
+def lookup(entry):
+    """Lookup callsign on QRZ"""
+
+    callsign = entry['callsign']
+    url = "https://www.qrz.com/db/{}".format(callsign)
+    os.system("open {}".format(url))
 
 
 def add_log_entry(db, entry):
@@ -64,36 +74,51 @@ def add_log_entry(db, entry):
 def get_time():
     """Get the time"""
 
-    t = datetime.datetime.now()
+    t = datetime.datetime.utcnow()
     Time = namedtuple("Time", ['date', 'time'])
     return Time(t.date(), t.time())
 
 
-def get_callsign():
+def get_callsign(db, entry):
     """Input callsign"""
 
-    callsign = input("Callsign: ")
-    return callsign
+    callsign = input("Callsign: ").upper()
+    entry['callsign'] = callsign
+
+    if callsign in db:
+
+        if entry['name'] == '':
+            entry['name'] = db[callsign][-1]['name']
+
+        if entry['qth'] == '':
+            entry['qth'] = db[callsign][-1]['qth']
+
+    return entry
 
 
-def get_name():
+def get_name(entry):
     """Input name"""
 
-    name = input("Name: ")
+    start_name = entry['name']
+
+    name = input("Name: [{}] ".format(start_name).title())
+    if name == '':
+        name = start_name
+
     return name
 
 
 def get_qth():
     """Get QTH"""
 
-    qth = input("QTH: ")
+    qth = input("QTH: ").upper()
     return qth
 
 
 def get_mode():
     """Get mode"""
 
-    mode = input("Mode: ")
+    mode = input("Mode: ").upper()
     return mode
 
 
@@ -127,10 +152,10 @@ def print_entry(entry):
               "Callsign: {callsign}\n"
               "Name: {name}\n"
               "QTH: {qth}\n"
-              "Start Time: {start_time}\n"
               "Start Date: {start_date}\n"
-              "End Time: {end_time}\n"
+              "Start Time: {start_time}\n"
               "End Date: {end_date}\n"
+              "End Time: {end_time}\n"
               "\n"
               "Mode: {mode}\n"
               "Frequency: {freq}\n"
@@ -148,10 +173,10 @@ def print_db_entry(entry):
     output = ("\n"
               "Name: {name}\n"
               "QTH: {qth}\n"
-              "Start Time: {start_time}\n"
               "Start Date: {start_date}\n"
-              "End Time: {end_time}\n"
+              "Start Time: {start_time}\n"
               "End Date: {end_date}\n"
+              "End Time: {end_time}\n"
               "\n"
               "Mode: {mode}\n"
               "Frequency: {freq}\n"
@@ -176,6 +201,8 @@ def print_database(db):
 
 
 def main_menu():
+    """Print main menu"""
+
     output = (
         "-----------------------------------------------------------\n"
         "(c)allsign, (n)ame, qt(h), (s)tart time, (e)nd time        \n"
@@ -191,6 +218,7 @@ def main():
     db = load_ham_log()
 
     entry = defaultdict(str)
+    default_entry = defaultdict(str)
 
     while True:
 
@@ -201,20 +229,19 @@ def main():
 
         if c == 's':
             t = get_time()
-            entry['start_time'] = str(t.time)
+            entry['start_time'] = str(t.time).split(".")[0]
             entry['start_date'] = str(t.date)
 
         if c == 'e':
             t = get_time()
-            entry['end_time'] = str(t.time)
+            entry['end_time'] = str(t.time).split(".")[0]
             entry['end_date'] = str(t.date)
 
         if c == 'c':
-            callsign = get_callsign()
-            entry['callsign'] = callsign
+            entry = get_callsign(db, entry)
 
         if c == 'n':
-            name = get_name()
+            name = get_name(entry)
             entry['name'] = name
 
         if c == 'h':
@@ -224,10 +251,12 @@ def main():
         if c == 'm':
             mode = get_mode()
             entry['mode'] = mode
+            default_entry['mode'] = mode
 
         if c == 'f':
             freq = get_freq()
             entry['freq'] = freq
+            default_entry['freq'] = freq
 
         if c == 't':
             tx_rst = get_tx_rst()
@@ -239,7 +268,16 @@ def main():
 
         if c == 'v':
             add_log_entry(db, entry)
-            entry = defaultdict(str)
+            entry = defaultdict(str, default_entry)
+
+        if c == 'x':
+            entry = defaultdict(str, default_entry)
+
+        if c == 'p':
+            print_database(db)
+
+        if c == 'l':
+            lookup(entry)
 
         if c == 'q':
             save_ham_log(db)
