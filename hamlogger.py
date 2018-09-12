@@ -293,62 +293,62 @@ def main():
             entry['start_time'] = str(t.time).split(".")[0]
             entry['start_date'] = str(t.date)
 
-        if c == 'e':
+        elif c == 'e':
             t = get_time()
             entry['end_time'] = str(t.time).split(".")[0]
             entry['end_date'] = str(t.date)
 
-        if c == 'c':
+        elif c == 'c':
             entry = get_callsign(db, entry)
 
-        if c == 'n':
+        elif c == 'n':
             name = get_name(entry)
             entry['name'] = name
 
-        if c == 'h':
+        elif c == 'h':
             qth = get_qth()
             entry['qth'] = qth
 
-        if c == 'm':
+        elif c == 'm':
             mode = get_mode()
             entry['mode'] = mode
             default_entry['mode'] = mode
 
-        if c == 'f':
+        elif c == 'f':
             freq = get_freq()
             entry['freq'] = freq
             default_entry['freq'] = freq
 
-        if c == 'b':
+        elif c == 'b':
             band = get_band()
             entry['band'] = band
             default_entry['band'] = band
 
-        if c == 't':
+        elif c == 't':
             tx_rst = get_tx_rst()
             entry['tx_rst'] = tx_rst
 
-        if c == 'r':
+        elif c == 'r':
             rx_rst = get_rx_rst()
             entry['rx_rst'] = rx_rst
 
-        if c == 'v':
+        elif c == 'v':
             add_log_entry(db, entry)
             entry = defaultdict(str, default_entry)
 
-        if c == 'x':
+        elif c == 'x':
             entry = defaultdict(str, default_entry)
 
-        if c == 'p':
+        elif c == 'p':
             print_database(db)
 
-        if c == 'P':
+        elif c == 'P':
             print_history(db, entry)
 
-        if c == 'l':
+        elif c == 'l':
             lookup(entry)
 
-        if c == 'q':
+        elif c == 'q':
             save_ham_log(db)
             break
 
